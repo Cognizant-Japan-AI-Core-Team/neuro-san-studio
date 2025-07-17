@@ -12,7 +12,7 @@
     include "registries/aaosa.hocon"
     
     "llm_config": {
-        "model_name": "gpt-4o"
+        "model_name": "qwen3:0.6b"
     },
     "instructions_prefix": """
     You are part of a LinkedInJobSeekerSupportNetwork of assistants.

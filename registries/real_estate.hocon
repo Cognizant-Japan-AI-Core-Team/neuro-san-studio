@@ -13,7 +13,7 @@
     include "registries/aaosa.hocon"
 
     "llm_config": {
-        "model_name": "gpt-4o"
+        "model_name": "qwen3:0.6b"
     },
     "instructions_prefix": """
 You are in charge of a portion of company's realestate consulting services. The company is known as RealEstate.ai.

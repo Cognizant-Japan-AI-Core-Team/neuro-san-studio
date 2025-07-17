@@ -11,7 +11,7 @@
 # END COPYRIGHT
 {
     "llm_config": {
-        "model_name": "llama3.1",
+        "model_name": "qwen3:0.6b",
     },
     "tools": [
         # This first agent definition is regarded as the "Front Man", which
