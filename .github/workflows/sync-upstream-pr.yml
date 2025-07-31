@@ -38,7 +38,8 @@ jobs:
           git merge upstream/main --no-edit || echo "Merge conflicts need manual resolution"
 
       - name: Delete problematic workflow file to allow push
-        run: rm -f .github/workflows
+        run: |
+          rm -f .github/workflows/
 
       - name: Commit the cleanup
         run: |
