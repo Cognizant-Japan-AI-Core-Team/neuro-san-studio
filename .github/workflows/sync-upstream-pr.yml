@@ -52,10 +52,15 @@ jobs:
         run: |
           git push origin sync-upstream --force
 
-      - name: Create PR to origin/main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr create --base main --head sync-upstream \
-            --title "Sync upstream/main into origin/main" \
-            --body "This PR merges upstream/main into origin/main via sync-upstream."
+      - name: Create Pull Request to main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync upstream changes into main"
+          title: "🔄 Sync forked main with upstream"
+          body: |
+            This PR merges the latest `upstream/main` into your fork's `main`, including any upstream changes.
+          branch: sync-upstream
+          base: main
+          delete-branch: false
+          assignees: y107818
