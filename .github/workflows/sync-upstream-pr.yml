@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  workflows: write
 
 jobs:
   sync:
@@ -33,6 +32,15 @@ jobs:
       - name: Create a sync-upstream branch from upstream/main
         run: |
           git checkout -b sync-upstream upstream/main
+
+      - name: Remove workflow files before push
+        run: |
+          rm -rf .github/workflows/
+      
+      - name: Commit cleanup
+        run: |
+          git add -A
+          git commit -m "remove workflow files" || echo "nothing to commit"
 
       - name: Push sync-upstream branch to origin
         run: |
