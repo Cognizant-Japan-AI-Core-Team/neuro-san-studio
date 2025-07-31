@@ -28,9 +28,9 @@ jobs:
           git fetch upstream
 
       - name: Create sync-upstream branch and merge
-      run: |
-        git checkout -b sync-upstream upstream/main
-        git push origin sync-upstream --force
+        run: |
+          git checkout -b sync-upstream upstream/main
+          git push origin sync-upstream --force
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
