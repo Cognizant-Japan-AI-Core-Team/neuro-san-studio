@@ -39,7 +39,7 @@ jobs:
 
       - name: Delete problematic workflow file to allow push
         run: |
-          rm -f .github/workflows/
+          rm -rf .github/workflows/
 
       - name: Commit the cleanup
         run: |
