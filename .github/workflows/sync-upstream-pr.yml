@@ -29,23 +29,22 @@ jobs:
           git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
           git fetch upstream
 
-      - name: Create a sync-upstream branch from upstream/main
+      - name: Create a sync-upstream branch from origin/main
         run: |
-          git checkout -b sync-upstream upstream/main
+          git checkout -b sync-upstream
 
-      - name: Merge sync-upstream into forked main
+      - name: Merge upstream/main into sync-upstream
         run: |
-          git merge origin/main --allow-unrelated-histories --no-edit || echo "Merge conflicts need manual resolution"
+          git merge upstream/main --allow-unrelated-histories --no-edit || echo "Merge conflicts need manual resolution"
 
-      - name: Delete problematic workflow file to allow push
+      - name: Remove workflow files to avoid push permission errors
         run: |
           rm -rf .github/workflows/
 
-      - name: Commit the cleanup
+      - name: Commit conflict cleanup
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore: remove workflows for sync PR" || echo "nothing to commit"
+          git add . || true
+          git commit -m "WIP: merge upstream into main (conflict stage)" 
 
       - name: Push sync branch to origin
         run: |
@@ -60,6 +59,6 @@ jobs:
           title: "🔄 Sync forked main with upstream"
           body: |
             This PR merges the latest `upstream/main` into your fork's `main`, including any upstream changes.
-          commit-message: "chore: merge upstream into main"
+          commit-message: "chore: sync upstream changes into main"
           delete-branch: false
           assignees: y107818
