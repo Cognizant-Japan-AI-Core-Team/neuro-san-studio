@@ -29,23 +29,28 @@ jobs:
           git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
           git fetch upstream
 
-      - name: Merge upstream/main into forked main
+      - name: Create a sync branch from main
         run: |
-          git merge upstream/main --no-edit || echo "Merge failed. Please resolve conflicts manually."
+          git checkout -b sync-upstream
 
-      - name: Push changes (if merge succeeded)
+      - name: Merge upstream/main into sync branch
         run: |
-          git push origin main
-        continue-on-error: true
+          git merge upstream/main --no-edit || echo "Merge conflicts need manual resolution"
 
-      - name: Create Pull Request if push fails (conflicts etc)
-        if: failure()  # push失敗時のみ実行
+      - name: Push sync branch to origin
+        run: |
+          git push origin sync-upstream --force
+
+      - name: Create Pull Request to main
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          branch: sync-upstream
           base: main
-          title: "🔄 Sync from upstream"
+          title: "🔄 Sync with upstream"
           body: |
-            This PR merges changes from `upstream/main` into your `main` branch.
-          commit-message: "chore: sync from upstream"
-          delete-branch: true
+            This PR merges changes from `upstream/main` into `main`.
+            Please review and resolve any conflicts if they exist.
+          commit-message: "chore: merge upstream changes into main"
+          delete-branch: false
+          assignees: y107818
