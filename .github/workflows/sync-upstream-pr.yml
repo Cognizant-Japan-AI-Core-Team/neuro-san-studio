@@ -1,4 +1,4 @@
-name: Sync fork with upstream
+name: Sync upstream into forked main
 
 on:
   schedule:
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Git config
         run: |
@@ -24,22 +26,26 @@ jobs:
 
       - name: Add upstream and fetch
         run: |
-          git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
+          git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
           git fetch upstream
 
-      - name: Create sync-upstream branch and merge
+      - name: Merge upstream/main into forked main
         run: |
-          git checkout -b sync-upstream upstream/main
+          git merge upstream/main --no-edit || echo "Merge failed. Please resolve conflicts manually."
 
-      - name: Create Pull Request
+      - name: Push changes (if merge succeeded)
+        run: |
+          git push origin main
+        continue-on-error: true
+
+      - name: Create Pull Request if push fails (conflicts etc)
+        if: failure()  # push失敗時のみ実行
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: sync-upstream
           base: main
-          title: "🔄 Weekly Sync with Upstream"
+          title: "🔄 Sync from upstream"
           body: |
-            This PR merges upstream changes into `main`. Please resolve any conflicts manually if needed.
-          commit-message: "chore: merge upstream into main"
-          delete-branch: false
-          assignees: y107818
+            This PR merges changes from `upstream/main` into your `main` branch.
+          commit-message: "chore: sync from upstream"
+          delete-branch: true
