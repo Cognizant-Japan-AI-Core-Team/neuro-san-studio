@@ -29,13 +29,13 @@ jobs:
           git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
           git fetch upstream
 
-      - name: Create a sync branch from main
+      - name: Create a sync-upstream branch from upstream/main
         run: |
           git checkout -b sync-upstream upstream/main
 
-      - name: Merge upstream/main into sync branch
+      - name: Merge sync-upstream into forked main
         run: |
-          git merge upstream/main --no-edit || echo "Merge conflicts need manual resolution"
+          git merge origin/main --no-edit || echo "Merge conflicts need manual resolution"
 
       - name: Delete problematic workflow file to allow push
         run: |
