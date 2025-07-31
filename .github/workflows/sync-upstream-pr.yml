@@ -35,7 +35,7 @@ jobs:
 
       - name: Remove workflow files before push
         run: |
-          rm -rf .github/workflows/
+          git rm -rf .github/workflows/
       
       - name: Commit cleanup
         run: |
