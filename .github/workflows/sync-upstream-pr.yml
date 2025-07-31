@@ -35,7 +35,7 @@ jobs:
 
       - name: Merge sync-upstream into forked main
         run: |
-          git merge origin/main --no-edit || echo "Merge conflicts need manual resolution"
+          git merge origin/main --allow-unrelated-histories --no-edit || echo "Merge conflicts need manual resolution"
 
       - name: Delete problematic workflow file to allow push
         run: |
