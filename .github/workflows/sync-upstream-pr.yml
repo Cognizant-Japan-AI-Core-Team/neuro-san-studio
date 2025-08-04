@@ -44,7 +44,7 @@ jobs:
 
       - name: Merge origin/main into sync-upstream
         run: |
-          git merge origin/main || true
+          git merge origin/main --allow-unrelated-histories 
 
       - name: Push sync-upstream branch to origin
         run: |
