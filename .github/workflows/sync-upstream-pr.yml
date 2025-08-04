@@ -33,14 +33,14 @@ jobs:
         run: |
           git checkout -b sync-upstream upstream/main
 
-      - name: Remove workflow files before push
-        run: |
-          git rm -rf .github/workflows/
+    #   - name: Remove workflow files before push
+    #     run: |
+    #       git rm -rf .github/workflows/
       
-      - name: Commit cleanup
-        run: |
-          git add -A
-          git commit -m "remove workflow files" || echo "nothing to commit"
+    #   - name: Commit cleanup
+    #     run: |
+    #       git add -A
+    #       git commit -m "remove workflow files" || echo "nothing to commit"
 
       - name: Merge origin/main into sync-upstream
         continue-on-error: true
