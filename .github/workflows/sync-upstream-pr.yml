@@ -1,0 +1,64 @@
+name: Sync upstream into forked main
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 毎週月曜0:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Git config
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream and fetch
+        run: |
+          git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
+          git fetch upstream
+
+      - name: Create a sync-upstream branch from upstream/main
+        run: |
+          git checkout -b sync-upstream upstream/main
+
+    #   - name: Remove workflow files before push
+    #     run: |
+    #       git rm -rf .github/workflows/
+      
+    #   - name: Commit cleanup
+    #     run: |
+    #       git add -A
+    #       git commit -m "remove workflow files" || echo "nothing to commit"
+
+      - name: Merge origin/main into sync-upstream
+        run: |
+          git merge origin/main --allow-unrelated-histories || true
+
+      - name: Push sync-upstream branch to origin
+        run: |
+          git push origin sync-upstream --force
+
+      - name: Create Pull Request to main
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync upstream changes into main"
+          title: "🔄 Sync forked main with upstream"
+          body: |
+            This PR merges the latest `upstream/main` into your fork's `main`, including any upstream changes.
+          branch: sync-upstream
+          base: main
+          delete-branch: false
+          assignees: y107818
