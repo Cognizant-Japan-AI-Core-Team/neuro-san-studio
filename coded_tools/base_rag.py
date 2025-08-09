@@ -65,7 +65,14 @@ class PostgresConfig:
     def connection_string(self) -> str:
         """Generate PostgreSQL connection string."""
 
+<<<<<<< HEAD
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}" + f":{self.port}/{self.database}"
+=======
+        return (
+            f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}"
+            f":{self.port}/{self.database}"
+        )
+>>>>>>> 4b933c6 (lint)
 
 
 class BaseRag(ABC):
