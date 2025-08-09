@@ -236,7 +236,11 @@ class BaseRag(ABC):
         table_name: str = postgres_config.table_name or DEFAULT_TABLE_NAME
 
         logger.info(
-            "PostgreSQL connection details:\n" "  Host: %s\n" "  Port: %s\n" "  Database: %s\n" "  Table: %s\n",
+            "PostgreSQL connection details:\n"
+            + "  Host: %s\n"
+            + "  Port: %s\n"
+            + "  Database: %s\n"
+            + "  Table: %s\n",
             postgres_config.host,
             postgres_config.port,
             postgres_config.database,
