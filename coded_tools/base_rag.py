@@ -16,29 +16,37 @@ import re
 from abc import ABC
 from abc import abstractmethod
 from dataclasses import dataclass
+from dataclasses import dataclass
 from typing import Any
 from typing import List
 from typing import Literal
+from typing import Literal
 from typing import Optional
 
-# pylint: disable=import-error
 from asyncpg import InvalidCatalogNameError
 from asyncpg import InvalidPasswordError
 from langchain_community.vectorstores import InMemoryVectorStore
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore
 from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGEngine
 from langchain_postgres import PGVectorStore
+from langchain_postgres import PGEngine
+from langchain_postgres import PGVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.exc import ProgrammingError
 
 # Invalid file path character pattern
 INVALID_PATH_PATTERN = r"[<>:\"|?*\x00-\x1F]"
 DEFAULT_TABLE_NAME = "vectorstore"
 EMBEDDINGS_MODEL = "text-embedding-3-small"
+VECTOR_SIZE = 1536
+EMBEDDINGS_MODEL = "text-embedding-3-small"
+DEFAULT_TABLE_NAME = "vectorstore"
 VECTOR_SIZE = 1536
 
 logger = logging.getLogger(__name__)
@@ -58,8 +66,7 @@ class PostgresConfig:
     @property
     def connection_string(self) -> str:
         """Generate PostgreSQL connection string."""
-
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}" f":{self.port}/{self.database}"
 
 
 class BaseRag(ABC):
@@ -71,6 +78,7 @@ class BaseRag(ABC):
         # Save the generated vector store as a JSON file if True
         self.save_vector_store: bool = False
         self.abs_vector_store_path: Optional[str] = None
+        self.embeddings: Embeddings = OpenAIEmbeddings(model=EMBEDDINGS_MODEL, dimensions=VECTOR_SIZE)
         self.embeddings: Embeddings = OpenAIEmbeddings(model=EMBEDDINGS_MODEL, dimensions=VECTOR_SIZE)
 
     @abstractmethod
@@ -93,10 +101,12 @@ class BaseRag(ABC):
         # Check for obviously invalid characters in filenames (basic check)
         if re.search(INVALID_PATH_PATTERN, vector_store_path):
             logger.error("Invalid characters in vector_store_path: '%s'\n", vector_store_path)
+            logger.error("Invalid characters in vector_store_path: '%s'\n", vector_store_path)
             raise ValueError(f"Invalid vector_store_path: '{vector_store_path}'")
 
         # Check file extension
         if not vector_store_path.endswith(".json"):
+            logger.error("vector_store_path must be a .json file, got: '%s'\n", vector_store_path)
             logger.error("vector_store_path must be a .json file, got: '%s'\n", vector_store_path)
             raise ValueError(f"vector_store_path must be a .json file, got: '{vector_store_path}'")
 
@@ -113,11 +123,17 @@ class BaseRag(ABC):
         loader_args: Any,
         postgres_config: Optional[PostgresConfig] = None,
         vector_store_type: Literal["in_memory", "postgres"] = "in_memory",
-    ) -> Optional[VectorStore]:
+    ) -> VectorStore:
         """
         Asynchronously loads documents from a given data source, splits them into
         chunks, and builds a vector store using OpenAI embeddings.
+        Asynchronously loads documents from a given data source, splits them into
+        chunks, and builds a vector store using OpenAI embeddings.
 
+        :param loader_args: Arguments specific to the document loader
+        :param postgres_config: PostgreSQL configuration (required for postgres vector store)
+        :param vector_store_type: Type of vector store to create
+        :return: Vector store containing the embedded document chunks
         :param loader_args: Arguments specific to the document loader
         :param postgres_config: PostgreSQL configuration (required for postgres vector store)
         :param vector_store_type: Type of vector store to create
@@ -171,7 +187,7 @@ class BaseRag(ABC):
         loader_args: Any,
         postgres_config: Optional[PostgresConfig],
         vector_store_type: Literal["in_memory", "postgres"],
-    ) -> Optional[VectorStore]:
+    ) -> VectorStore:
         """Create a new vector store."""
 
         if vector_store_type == "in_memory":
@@ -182,6 +198,7 @@ class BaseRag(ABC):
     async def _process_documents(self, loader_args: Any) -> List[Document]:
         """Load and split documents"""
         # Load documents and build the vector store
+        docs: List[Document] = await self.load_documents(loader_args)
         docs: List[Document] = await self.load_documents(loader_args)
 
         # Split documents into smaller chunks for better embedding and retrieval
@@ -197,13 +214,22 @@ class BaseRag(ABC):
         doc_chunks: List[Document] = await self._process_documents(loader_args)
         logger.info("Creating in-memory vector store.")
         return await InMemoryVectorStore.afrom_documents(
+
+        doc_chunks: List[Document] = text_splitter.split_documents(docs)
+        logger.info("Processed %d document chunks\n", len(doc_chunks))
+
+        return doc_chunks
+
+    async def _create_in_memory_vector_store(self, loader_args) -> VectorStore:
+        """Create an in-memory vector store."""
+        doc_chunks: List[Document] = await self._process_documents(loader_args)
+        logger.info("Creating in-memory vector store.")
+        return await InMemoryVectorStore.afrom_documents(
             documents=doc_chunks,
             embedding=self.embeddings,
         )
 
-    async def _create_postgres_vector_store(
-        self, loader_args: Any, postgres_config: PostgresConfig
-    ) -> Optional[VectorStore]:
+    async def _create_postgres_vector_store(self, loader_args: Any, postgres_config: PostgresConfig) -> VectorStore:
         """Create a PostgreSQL vector store."""
 
         # Create engine and table
@@ -211,11 +237,7 @@ class BaseRag(ABC):
         table_name: str = postgres_config.table_name or DEFAULT_TABLE_NAME
 
         logger.info(
-            "PostgreSQL connection details:\n"
-            + "  Host: %s\n"
-            + "  Port: %s\n"
-            + "  Database: %s\n"
-            + "  Table: %s\n",
+            "PostgreSQL connection details:\n" "  Host: %s\n" "  Port: %s\n" "  Database: %s\n" "  Table: %s\n",
             postgres_config.host,
             postgres_config.port,
             postgres_config.database,
@@ -267,9 +289,11 @@ class BaseRag(ABC):
             logger.error("Fail to create vector store due to invalid DB name. %s\n", invalid_catalog_error)
             return None
 
-    async def _save_vector_store(self, vectorstore: VectorStore, vector_store_type: Literal["in_memory", "postgres"]):
+    async def _save_vector_store(
+        self, vectorstore: VectorStore, vector_store_type: Literal["in_memory", "postgres"]
+    ) -> None:
         """Save vector store to file if configured."""
-        should_save: bool = self.save_vector_store and self.abs_vector_store_path and vector_store_type == "in_memory"
+        should_save = self.save_vector_store and self.abs_vector_store_path and vector_store_type == "in_memory"
 
         if not should_save:
             return None
@@ -277,6 +301,9 @@ class BaseRag(ABC):
         try:
             os.makedirs(os.path.dirname(self.abs_vector_store_path), exist_ok=True)
             vectorstore.dump(path=self.abs_vector_store_path)
+            logger.info("Vector store saved to: %s\n", self.abs_vector_store_path)
+        except OSError as os_error:
+            logger.error("Failed to save vector store to %s: %s\n", self.abs_vector_store_path, os_error)
             logger.info("Vector store saved to: %s\n", self.abs_vector_store_path)
         except OSError as os_error:
             logger.error("Failed to save vector store to %s: %s\n", self.abs_vector_store_path, os_error)
@@ -293,30 +320,20 @@ class BaseRag(ABC):
         try:
             # Create a retriever interface from the vector store
             retriever: VectorStoreRetriever = vectorstore.as_retriever()
-
-            return await self.query_retriever(retriever, query)
-
-        except AttributeError:
-            return "Failed to create vector store. Please check the log for more information.\n"
-
-    @staticmethod
-    async def query_retriever(retriever: Any, query: str) -> str:
-        """
-        Query the retriever with the given query string and return the results.
-
-        :param retriever: The retriever interface to query
-        :param query: The user query to search for relevant documents
-        :return: Concatenated text content of the retrieved documents
-        """
         try:
+            # Create a retriever interface from the vector store
+            retriever: VectorStoreRetriever = vectorstore.as_retriever()
+
             # Perform an asynchronous similarity search
             results: List[Document] = await retriever.ainvoke(query)
 
+            if results:
+                logger.info("Retrieval completed!\n")
             if results:
                 logger.info("Retrieval completed!\n")
 
             # Concatenate the content of all retrieved documents
             return "\n\n".join(doc.page_content for doc in results)
 
-        except asyncio.TimeoutError as e:
-            return f"Timed out while querying retriever: {e}"
+        except AttributeError:
+            return "Failed to create vector store. Please check the log for more information.\n"
