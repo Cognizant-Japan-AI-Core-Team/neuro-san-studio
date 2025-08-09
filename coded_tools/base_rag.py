@@ -23,6 +23,7 @@ from typing import Literal
 from typing import Literal
 from typing import Optional
 
+# pylint: disable=import-error
 from asyncpg import InvalidCatalogNameError
 from asyncpg import InvalidPasswordError
 from langchain_community.vectorstores import InMemoryVectorStore
@@ -42,9 +43,6 @@ from sqlalchemy.exc import ProgrammingError
 
 # Invalid file path character pattern
 INVALID_PATH_PATTERN = r"[<>:\"|?*\x00-\x1F]"
-DEFAULT_TABLE_NAME = "vectorstore"
-EMBEDDINGS_MODEL = "text-embedding-3-small"
-VECTOR_SIZE = 1536
 EMBEDDINGS_MODEL = "text-embedding-3-small"
 DEFAULT_TABLE_NAME = "vectorstore"
 VECTOR_SIZE = 1536
@@ -66,7 +64,8 @@ class PostgresConfig:
     @property
     def connection_string(self) -> str:
         """Generate PostgreSQL connection string."""
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}" f":{self.port}/{self.database}"
+
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}" + f":{self.port}/{self.database}"
 
 
 class BaseRag(ABC):
@@ -123,7 +122,7 @@ class BaseRag(ABC):
         loader_args: Any,
         postgres_config: Optional[PostgresConfig] = None,
         vector_store_type: Literal["in_memory", "postgres"] = "in_memory",
-    ) -> VectorStore:
+    ) -> Optional[VectorStore]:
         """
         Asynchronously loads documents from a given data source, splits them into
         chunks, and builds a vector store using OpenAI embeddings.
@@ -187,7 +186,7 @@ class BaseRag(ABC):
         loader_args: Any,
         postgres_config: Optional[PostgresConfig],
         vector_store_type: Literal["in_memory", "postgres"],
-    ) -> VectorStore:
+    ) -> Optional[VectorStore]:
         """Create a new vector store."""
 
         if vector_store_type == "in_memory":
