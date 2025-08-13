@@ -43,6 +43,9 @@ from sqlalchemy.exc import ProgrammingError
 
 # Invalid file path character pattern
 INVALID_PATH_PATTERN = r"[<>:\"|?*\x00-\x1F]"
+DEFAULT_TABLE_NAME = "vectorstore"
+EMBEDDINGS_MODEL = "text-embedding-3-small"
+VECTOR_SIZE = 1536
 EMBEDDINGS_MODEL = "text-embedding-3-small"
 DEFAULT_TABLE_NAME = "vectorstore"
 VECTOR_SIZE = 1536
