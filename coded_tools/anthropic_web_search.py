@@ -13,14 +13,16 @@ from typing import Any
 
 from neuro_san.interfaces.coded_tool import CodedTool
 
-from coded_tools.openai_tool import OpenAITool
+from coded_tools.anthropic_tool import AnthropicTool
+
+WEB_SEARCH_TOOL_TYPE = "web_search_20250305"
 
 
-class OpenAIWebSearch(CodedTool):
+class AnthropicWebSearch(CodedTool):
     """
-    A CodedTool implementation for invoking OpenAI web search tool using LangChain's ChatOpenAI.
+    A CodedTool implementation for invoking Anthropic web search tool using LangChain's ChatAnthopic.
 
-    See https://platform.openai.com/docs/guides/tools?api-mode=responses
+    See https://python.langchain.com/docs/integrations/chat/anthropic/#web-search
     """
 
     async def async_invoke(self, args: dict[str, Any], sly_data: dict[str, Any]) -> list[dict[str, Any]] | str:
@@ -33,7 +35,7 @@ class OpenAIWebSearch(CodedTool):
                 - from calling agent
                     - "query" (str): Request from the user prompt.
                 - from user
-                    - "openai_model" (str): OpenAI model to call the tool. Default to gpt-4o-2024-08-06.
+                    - "anthropic_model" (str): Anthropic model to call the tool. Default to claude-3-7-sonnet-20250219.
                     - "additional_kwargs" (dict): Any additional arguments for the tool.
 
         :param sly_data: A dictionary whose keys are defined by the agent hierarchy,
@@ -64,11 +66,18 @@ class OpenAIWebSearch(CodedTool):
 
         # User-defined arguments
 
-        # The OpenAI model to use when calling the tool.
-        openai_model: str = args.get("openai_model")
+        # The Anthropic model to use when calling the tool.
+        anthropic_model: str = args.get("anthropic_model")
 
         # Additional keyword arguments to pass to the selected tool.
-        # See https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses
+        # See https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/web-search-tool
         additional_kwargs: dict[str, Any] = args.get("additional_kwargs", {})
 
-        return await OpenAITool.arun(query, "web_search_preview", openai_model, **additional_kwargs)
+        return await AnthropicTool.arun(
+            query=query,
+            tool_type=WEB_SEARCH_TOOL_TYPE,
+            tool_name="web_search",
+            anthropic_model=anthropic_model,
+            betas=None,
+            **additional_kwargs
+        )
