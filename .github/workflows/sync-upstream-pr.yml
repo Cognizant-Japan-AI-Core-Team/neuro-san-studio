@@ -1,8 +1,9 @@
+# .github/workflows/sync-upstream-pr.yml
 name: Sync upstream into forked main
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # 毎週月曜0:00 UTC
+    - cron: "0 0 * * 1"   # 毎週月曜 00:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -15,49 +16,60 @@ jobs:
 
     steps:
       - name: Checkout main
+      # PRのベースにする自分の main を取得
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Set up Git config
         run: |
-          git config --global user.name "github-actions[bot]"
+          git config --global user.name  "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Add upstream and fetch
         run: |
-          git remote | grep upstream || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
-          git fetch upstream
+          git remote | grep -q "^upstream$" || git remote add upstream https://github.com/cognizant-ai-lab/neuro-san-studio.git
+          git fetch upstream --tags --prune
 
-      - name: Create a sync-upstream branch from upstream/main
+      - name: Recreate local sync branch from upstream/main
         run: |
+          # 既存があれば消して作り直す（毎回きれいな状態に）
+          git branch -D sync-upstream || true
           git checkout -b sync-upstream upstream/main
 
-    #   - name: Remove workflow files before push
-    #     run: |
-    #       git rm -rf .github/workflows/
-      
-    #   - name: Commit cleanup
-    #     run: |
-    #       git add -A
-    #       git commit -m "remove workflow files" || echo "nothing to commit"
-
-      - name: Merge origin/main into sync-upstream
+      - name: Merge origin/main into sync-upstream (prefer upstream on conflicts)
         run: |
-          git merge origin/main --allow-unrelated-histories || true
+          # upstream/main（現在のブランチ）を優先する設定
+          git merge origin/main --allow-unrelated-histories -X ours || true
+          # もし未解決のコンフリクトがあればログを出して失敗
+          if ! git diff --check --exit-code; then
+            echo "::error::Merge conflicts remain. Please resolve manually."
+            exit 1
+          fi
 
-      - name: Push sync-upstream branch to origin
+      # （オプション）Upstream のワークフローを無効にしたい場合はここで削除
+      # - name: Remove upstream workflow files before pushing PR branch
+      #   run: |
+      #     rm -rf .github/workflows/build-push.yml
+      #     git add -A
+      #     git commit -m "chore: remove upstream workflows in PR branch" || echo "nothing to commit"
+
+      - name: Push sync-upstream branch to origin (force)
         run: |
-          git push origin sync-upstream --force
+          git push origin HEAD:sync-upstream --force
 
-      - name: Create Pull Request to main
+      - name: Create/Update PR to main
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: sync upstream changes into main"
-          title: "🔄 Sync forked main with upstream"
+          title: "🔄 Sync upstream/main into forked main"
           body: |
-            This PR merges the latest `upstream/main` into your fork's `main`, including any upstream changes.
+            This PR syncs the latest `upstream/main` into `main`.
+            - Base branch: `main` (fork)
+            - Source branch: `sync-upstream` (rebuilt from `upstream/main` + merged `origin/main`)
+            Conflict strategy: **upstream wins** (`-X ours`). Change to `-X theirs` if you prefer fork to win.
+          commit-message: "chore: sync upstream changes into main"
           branch: sync-upstream
           base: main
           delete-branch: false
