@@ -23,6 +23,7 @@
     "hello_world.hocon": true,
     "advanced_calculator.hocon": false,
     "smart_home.hocon": true,
+    "coffee_finder.hocon": true,
 
     # Tool integration examples
 
@@ -102,6 +103,14 @@
     # Once you've downloaded the credentials.json file and put it in the top level of this repo,
     # you can start using the agent network.
     "gmail.hocon": false,
+
+    # To use this agent network, start by installing the required package:
+    #     pip install wikipedia
+    "wikipedia_rag.hocon": false,
+
+    # To use this agent network, start by installing the required package:
+    #     pip install arxiv
+    "arxiv_rag.hocon": false,
 
 
     # Use cases

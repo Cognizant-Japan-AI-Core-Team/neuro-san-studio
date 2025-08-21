@@ -11,6 +11,7 @@ Here are a few examples ordered by level of complexity.
     * [Music Nerd Pro Local](#music-nerd-pro-local)
     * [Music Nerd Pro Sly](#music-nerd-pro-sly)
     * [Music Nerd Pro Sly Local](#music-nerd-pro-sly-local)
+    * [Coffee Finder](#coffee-finder)
   * [🧰 Tool Integration Examples](#-tool-integration-examples)
     * [Anthropic Code Execution](#anthropic-code-execution)
     * [Anthropic Web Search](#anthropic-web-search)
@@ -25,6 +26,8 @@ Here are a few examples ordered by level of complexity.
     * [PDF RAG Assistant](#pdf-rag-assistant)
     * [Confluence RAG Assistant](#confluence-rag-assistant)
     * [Agentic RAG Assistant](#agentic-rag-assistant)
+    * [Wikipedia RAG Assistant](#wikipedia-rag-assistant)
+    * [ArXiv RAG Assistant](#arxiv-rag-assistant)
   * [🏢 Industry-Specific Examples](#-industry-specific-examples)
     * [Intranet Agents](#intranet-agents)
     * [Intranet Agents With Tools](#intranet-agents-with-tools)
@@ -91,6 +94,15 @@ This is a good way to learn about how to manage a state in a conversation.
 a **tool-calling** LLM that runs locally with Ollama.
 
 **Tags:** `tool`, `sly_data`, `llm_config`
+
+### Coffee Finder
+
+[Coffee Finder](./examples/coffee_finder.md) is an agent network that helps
+users find coffee at any time of the day. It shows how multiple agents can
+provide the same service and how the AAOSA instructions can be used to choose
+the best option depending on the context.
+
+**Tags:** `AAOSA`
 
 ## 🧰 Tool Integration Examples
 
@@ -198,6 +210,20 @@ retrieving information from the web, PDF documents, and Slack channels. It mimic
 to specialized tools and compiles responses into clear, helpful answers.
 
 **Tags:** `tool`, `API`, `RAG`
+
+### Wikipedia RAG Assistant
+
+[Wikipedia RAG Assistant](./examples/wikipedia_rag.md) answers user queries by searching Wikipedia, fetching the most
+relevant articles, and synthesizing their content into accurate, detailed answers (no vector store required).
+
+**Tags:** `tool`, `RAG`
+
+### ArXiv RAG Assistant
+
+[ArXiv RAG Assistant](./examples/arxiv_rag.md) is an agent-based system that queries arXiv, pulls the best-matching
+research papers (abstracts or full text) and produces accurate responses to user queries (no vector store needed).
+
+**Tags:** `tool`, `RAG`
 
 ## 🏢 Industry-Specific Examples
 
