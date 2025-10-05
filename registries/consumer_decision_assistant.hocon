@@ -13,7 +13,7 @@
    include "registries/aaosa.hocon"
    
     "llm_config": {
-        "model_name": "qwen3:0.6b"
+        "model_name": "qwen3:8b"
     },
     "max_iterations": 5000,
     "max_execution_seconds": 900,

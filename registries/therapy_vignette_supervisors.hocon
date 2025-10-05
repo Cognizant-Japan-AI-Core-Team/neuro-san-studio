@@ -11,7 +11,7 @@
 
 {
     "llm_config": {
-        "model_name": "qwen3:0.6b"
+        "model_name": "qwen3:8b"
     },
     "instructions_prefix": """
 You are part of a TherapyVignetteSupervisors of assistants.

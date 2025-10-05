@@ -11,7 +11,7 @@
     include "registries/aaosa.hocon"
     
     "llm_config": {
-        "model_name": "qwen3:0.6b",
+        "model_name": "qwen3:8b",
     },
     "instructions_prefix": """
 You are in charge of a portion of the help desk of an airline company.

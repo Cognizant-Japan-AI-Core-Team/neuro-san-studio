@@ -36,7 +36,7 @@
 
 {
     "llm_config": {
-        "model_name": "qwen3:0.6b",
+        "model_name": "qwen3:8b",
     },
     "max_execution_seconds": 6000,
     "tools": [
