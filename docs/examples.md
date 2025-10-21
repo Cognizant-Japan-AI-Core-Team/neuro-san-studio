@@ -31,6 +31,7 @@ Here are a few examples ordered by level of complexity.
     * [Wikipedia RAG Assistant](#wikipedia-rag-assistant)
     * [ArXiv RAG Assistant](#arxiv-rag-assistant)
     * [ServiceNow AI Agents](#servicenow-ai-agents)
+    * [Visual Question Answering](#visual-question-answering)
   * [🏢 Industry-Specific Examples](#-industry-specific-examples)
     * [Intranet Agents](#intranet-agents)
     * [Intranet Agents With Tools](#intranet-agents-with-tools)
@@ -257,6 +258,13 @@ capabilities for 100+ specialized AI agents within ServiceNow instances for IT s
 procurement, and other enterprise processes.
 
 **Tags:** `tool`, `API`, `ServiceNow`, `Enterprise`
+
+### Visual Question Answering
+
+[Visual Question Answering](./examples/visual_question_answering.md) is an agent network that allows you to pose
+queries against images or videos. It uses Apple's ml-fastvlm library to answer the queries.
+
+**Tags:** `tool`, `Visual Question Answering`, `VQA`, `Vision Language Models`, `VLM`, `ml-fastvlm`
 
 ## 🏢 Industry-Specific Examples
 
